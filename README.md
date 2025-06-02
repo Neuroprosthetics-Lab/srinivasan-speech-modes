@@ -22,4 +22,6 @@ Run the following scripts to generate these figures
 4. Fig 2B-D dPCA -- plot_dPCA_results.py
 5. Fig 3A loudness classification along trial -- ol_striding_classification.py
 6. Fig 3B loudness classification -- ol_classification_performance.py
-7. Supp Fig 3 speech and breath analyses -- instructed_breath_speech_breath_belt_analysis.py, instructed_breath_speech_classification_analysis.py
+7. Supp Fig 3A-B speech and breath analyses -- instructed_breath_speech_breath_belt_analysis.py
+8. Supp Fig 3C speech and breath psth -- instructed_breath_speech_psth.py
+9. Supp Fig 3D-E speech and breath classification -- instructed_breath_speech_classification_analysis.py
