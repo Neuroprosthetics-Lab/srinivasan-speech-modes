@@ -10,10 +10,25 @@ scikit-learn 1.5.1
 noisereduce 3.0.3
 ```
 
-## Running analyses
-Sample processed neural data from one of the participant is in ```data``` folder.
+## Generating manuscript results
+To generate the results and plots we have reported in the manuscript, you can run the codes in the folder ```plot_results```. The python scripts in the folder read the results we obtained by analyzing the data and generate plots. The sub-folder ```results``` has the results we obtained (such as classification accuracies, firing rates etc.) obtained by analyzing the data as .pkl files.
 
-To run an analysis script in ```analyses_scripts``` folder, execute the example run command provided in the script with the required data.
+Scripts to run for:
+
+1. psths:
+2. significant channels tuned to loudness or words:
+3. pca:
+4. dpca:
+5. temporal loudness classification along trial:
+6. overall loudness classification:
+7. speech and breath analyses:
+8. breath and speech psth:
+9. speech and breath classification:
+
+## Running analyses
+Sample processed neural data from one of the participant is in ```data``` folder. We will upload the 
+
+To run an analysis script in ```analyses_scripts``` folder, execute the example run command provided in the script with the required data. Note: these scripts will only generate the correct results when the entire dataset is provided. The results obtained using sample data could be wrong. Here, we provide the analyses scripts to just let you know how we implemented the analyses
 
 Run the following scripts to generate these figures
 1. Fig 1C psth -- psth.py
