@@ -1,3 +1,5 @@
+# This script plots psth per electrode.
+
 import argparse
 import os
 import numpy as np
@@ -8,16 +10,20 @@ from datetime import datetime
 import matplotlib.transforms as transforms
 
 '''
-Example run cmd:
-python psth.py --participant t15 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25
-    --nbins_after_offset 30 --plot_speech_offset --savepath_data ../plotting_data/t15/word-loudness/psth/
-    --savepath_fig ../plotting_figures/t15/word-loudness/psth/
+Example cmd:
+For t15,
+    python psth.py --participant t15 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 30 --plot_speech_offset --savepath_data ../plotting_data/t15/word-loudness/psth/ --savepath_fig ../plotting_figures/t15/word-loudness/psth/
+For t16,
+    python psth.py --participant t16 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 30 --plot_speech_offset --savepath_data ../plotting_data/t16/word-loudness/psth/ --savepath_fig ../plotting_figures/t16/word-loudness/psth/
 
 Args:
 nbins_before_onset = 100
 nbins_after_onset = 50
 nbins_before_offset = 25
 nbins_after_offset = 30
+
+Data will be loaded from the specified savepath_data directory.
+Figures will be saved in the specified savepath_fig directory.
 '''
 
 

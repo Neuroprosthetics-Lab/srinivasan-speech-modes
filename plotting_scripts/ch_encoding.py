@@ -1,3 +1,5 @@
+# This script plots the number of significant channels for each word and loudness level.
+
 import argparse
 import numpy as np
 from datetime import datetime
@@ -9,8 +11,13 @@ import pickle as pkl
 
 '''
 Example cmd:
-python ch_encoding.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/ch_encoding/ 
---savepath_fig ../plotting_figures/t15/word-loudness/ch_encoding/
+For t15,
+    python ch_encoding.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/ch_encoding/ --savepath_fig ../plotting_figs/t15/word-loudness/ch_encoding/
+For t16,
+    python ch_encoding.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/ch_encoding/ --savepath_fig ../plotting_figs/t16/word-loudness/ch_encoding/
+
+Data will be loaded from the specified savepath_data directory.
+Figures will be saved in the specified savepath_fig directory.
 '''
 
 #---------------------------------------------------
@@ -174,6 +181,7 @@ if __name__ == "__main__":
     plot_legend(colors['loudness'], scatter_size_scales['loudness'], legend_key = 'loudness')
 
     # load ch encoding for word
+    print('Plotting channels with number of word tuning ...')
     with open(f'{args.savepath_data}ch_encoding_word.pkl', 'rb') as f:
         n_significant_word_encoding = pkl.load(f)   
 
