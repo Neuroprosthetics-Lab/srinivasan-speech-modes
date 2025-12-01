@@ -11,8 +11,10 @@ from matplotlib.colors import LinearSegmentedColormap
 '''
 example cmd:
 For t15,
+    python dpca.py --participant t15 --session word-loudness --nbins_before_onset 75 --nbins_after_onset 75 --savepath_data ../plotting_data/t15/word-loudness/dPCA/ --savepath_fig ../plotting_figures/t15/word-loudness/dPCA/
 
 For t16,
+    python dpca.py --participant t16 --session word-loudness --nbins_before_onset 75 --nbins_after_onset 75 --savepath_data ../plotting_data/t16/word-loudness/dPCA/ --savepath_fig ../plotting_figures/t16/word-loudness/dPCA/
 
 '''
 
