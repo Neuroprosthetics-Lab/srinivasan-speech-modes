@@ -1,4 +1,4 @@
-# This script plots the number of significant channels for each word and loudness level.
+# This script plots the channels that are significantly modulated by loudness levels and words.
 
 import argparse
 import numpy as np
