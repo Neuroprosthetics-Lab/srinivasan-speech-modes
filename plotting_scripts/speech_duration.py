@@ -17,6 +17,9 @@ For t15,
     plotting_scripts % python speech_duration.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t15/word-loudness/speech_duration/
 For t16,
     plotting_scripts % python speech_duration.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t16/word-loudness/speech_duration/
+
+Data will be loaded from the specified savepath_data directory.
+Figures will be saved in the specified savepath_fig directory.
 '''
 
 fs = 30000

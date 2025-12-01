@@ -13,6 +13,9 @@ For t15,
     python pca.py --participant t15 --session word-loudness --nbins_before_onset 75 --nbins_after_onset 75 --savepath_data ../plotting_data/t15/word-loudness/PCA/ --savepath_fig ../plotting_figures/t15/word-loudness/PCA/
 For t16,
     python pca.py --participant t16 --session word-loudness --nbins_before_onset 75 --nbins_after_onset 75 --savepath_data ../plotting_data/t16/word-loudness/PCA/ --savepath_fig ../plotting_figures/t16/word-loudness/PCA/
+
+Data will be loaded from the specified savepath_data directory.
+Figures will be saved in the specified savepath_fig directory.
 '''
 
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
