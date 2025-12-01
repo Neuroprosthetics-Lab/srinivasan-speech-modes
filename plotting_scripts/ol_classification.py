@@ -1,4 +1,5 @@
 # This script plots the open-loop classification performance results.
+
 import argparse
 import os
 import numpy as np
@@ -25,7 +26,7 @@ Figures will be saved in the specified savepath_fig directory.
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
 words = ['be', 'my', 'know', 'do', 'have', 'going']
 arrays = {
-    't15': ['M1', 'v6v','d6v','55b'], # correct_electrode_mapping = 0
+    't15': ['M1', 'v6v','d6v','55b'],
     't16': ['55b', '6v'],#, 'HK1', 'HK2'],
     't19': ['M1-s', '55b-p', '55b-a', 'M1-i'],
 }
@@ -37,7 +38,7 @@ my_color = 'navy'
 my_color_all_array = 'green'
 bar_width = 1.2
 array_plotting_order = {
-    't15': ['55b', 'd6v', 'M1', 'v6v'], # using_correct_electrode_mapping = 0
+    't15': ['55b', 'd6v', 'M1', 'v6v'], 
     't16': ['55b', '6v'],#,'HK1','HK2'] # only speech arrays needed
 }
 

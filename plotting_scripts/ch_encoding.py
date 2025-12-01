@@ -4,7 +4,6 @@ import argparse
 import numpy as np
 from datetime import datetime
 import os
-from pathlib import Path
 import math
 import matplotlib.pyplot as plt
 import pickle as pkl
@@ -23,13 +22,8 @@ Figures will be saved in the specified savepath_fig directory.
 #---------------------------------------------------
 # global variables
 #---------------------------------------------------
-
-bin_size_ms = 10
-fs = 30000
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
 words = ['be', 'my', 'know', 'do', 'have', 'going']
-n_channels = 256
-alpha = 0.05  # significance level
 
 plotting_order_1 = [
     63, 55, 47, 39, 31, 23, 15, 7,

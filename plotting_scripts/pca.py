@@ -1,10 +1,10 @@
 # This script plots the PCA projections colored by loudness levels and words.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 from datetime import datetime
 import os
-from pathlib import Path
 import pickle as pkl  
 
 '''

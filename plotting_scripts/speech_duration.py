@@ -1,8 +1,8 @@
+# This script plots the speech duration across different words and loudness levels.
+
 import argparse
 import os
-import scipy
 import numpy as np
-from pathlib import Path
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import pickle as pkl
