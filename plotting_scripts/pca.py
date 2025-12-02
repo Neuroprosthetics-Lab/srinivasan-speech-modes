@@ -8,7 +8,7 @@ import os
 import pickle as pkl  
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python pca.py --participant t15 --session word-loudness --nbins_before_onset 75 --nbins_after_onset 75 --savepath_data ../plotting_data/t15/word-loudness/PCA/ --savepath_fig ../plotting_figures/t15/word-loudness/PCA/
 For t16,

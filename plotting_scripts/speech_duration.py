@@ -12,7 +12,7 @@ from scipy.stats import ranksums
 from itertools import combinations
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     plotting_scripts % python speech_duration.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t15/word-loudness/speech_duration/
 For t16,

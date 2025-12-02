@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python ol_classification.py --participant t15 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_data ../plotting_data/t15/word-loudness/ol_classification/ --savepath_fig ../plotting_figures/t15/word-loudness/ol_classification/
 For t16,

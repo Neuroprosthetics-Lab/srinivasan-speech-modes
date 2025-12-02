@@ -10,7 +10,7 @@ from datetime import datetime
 import matplotlib.transforms as transforms
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python psth.py --participant t15 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 30 --plot_speech_offset --savepath_data ../plotting_data/t15/word-loudness/psth/ --savepath_fig ../plotting_figures/t15/word-loudness/psth/
 For t16,

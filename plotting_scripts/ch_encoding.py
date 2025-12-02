@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pickle as pkl
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python ch_encoding.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/ch_encoding/ --savepath_fig ../plotting_figs/t15/word-loudness/ch_encoding/
 For t16,
