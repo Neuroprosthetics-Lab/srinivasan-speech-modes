@@ -11,9 +11,9 @@ import pickle as pkl
 '''
 Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
-    python ch_encoding.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/ch_encoding/ --savepath_fig ../plotting_figs/t15/word-loudness/ch_encoding/
+    python ch_encoding.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/ch_encoding/ --savepath_fig ../plotting_figures/t15/word-loudness/ch_encoding/
 For t16,
-    python ch_encoding.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/ch_encoding/ --savepath_fig ../plotting_figs/t16/word-loudness/ch_encoding/
+    python ch_encoding.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/ch_encoding/ --savepath_fig ../plotting_figures/t16/word-loudness/ch_encoding/
 
 Data will be loaded from the specified savepath_data directory.
 Figures will be saved in the specified savepath_fig directory.
@@ -133,7 +133,7 @@ def plot_legend(color, scatter_size_scale, legend_key):
     # plt.show()
 
     # save figure
-    plt.savefig(f'{args.savepath_fig}{args.participant}_{args.session}_ch_encoding_{legend_key}_legend_{formatted_datetime}.png', format='png')
+    plt.savefig(f'{args.savepath_fig}{args.participant}_ch_encoding_{legend_key}_legend_{formatted_datetime}.png', format='png')
 
     return
 
