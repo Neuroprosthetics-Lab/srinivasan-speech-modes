@@ -6,7 +6,6 @@ import numpy as np
 import pickle as pkl
 from datetime import datetime
 import matplotlib.pyplot as plt
-from mne.stats import permutation_cluster_test
 
 '''
 Example cmd (when run from this directory; provide python script path appropriately if run from different directory):

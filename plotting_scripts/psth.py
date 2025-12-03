@@ -3,7 +3,6 @@
 import argparse
 import os
 import numpy as np
-from pathlib import Path
 import matplotlib.pyplot as plt
 import pickle as pkl
 from datetime import datetime
