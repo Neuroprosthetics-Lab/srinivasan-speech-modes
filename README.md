@@ -2,12 +2,13 @@
 This repository houses codes related to analyzing intracortical neural activity of speech modes and loudness.
 
 ## Installation
-**Requirements:** Code has been tested in Python 3.9.
+**Requirements:** Code has been tested in Python 3.9. Clone the repository and install required libraries.
+
+You can create a conda environment to run the ```plotting_scripts``` as follows:
 ```
-scipy 1.13.1
-numpy 2.0.1
-scikit-learn 1.5.1
-noisereduce 3.0.3
+conda create -n speech-modes python=3.9
+conda activate speech-modes
+pip install -r plotting_requirements.txt
 ```
 
 ## Generating manuscript results
