@@ -13,7 +13,6 @@ For t15,
     python single_unit_psth_tuning.py --participant t15 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 25 --plot_speech_offset --savepath_data ../plotting_data/t15/word-loudness/single_unit_neurons/ --savepath_fig ../plotting_figures/t15/word-loudness/single_unit_neurons/
 For t16,
     python single_unit_psth_tuning.py --participant t16 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 30 --plot_speech_offset --savepath_data ../plotting_data/t16/word-loudness/single_unit_neurons/ --savepath_fig ../plotting_figures/t16/word-loudness/single_unit_neurons/
-
 '''
 
 #---------------------------------------------------

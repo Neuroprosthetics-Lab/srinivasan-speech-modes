@@ -1,4 +1,5 @@
-# This script plots the speech duration across different words and loudness levels.
+# This script plots the speech duration across different words and loudness levels, 
+# and decoding accuracy when using minimum speech duration neural data.
 
 import argparse
 import os
@@ -10,13 +11,14 @@ import math
 from datetime import datetime
 from scipy.stats import ranksums
 from itertools import combinations
+import seaborn as sns
 
 '''
 Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
-    plotting_scripts % python speech_duration.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t15/word-loudness/speech_duration/
+    python speech_duration.py --participant t15 --session word-loudness --savepath_data ../plotting_data/t15/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t15/word-loudness/speech_duration/
 For t16,
-    plotting_scripts % python speech_duration.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t16/word-loudness/speech_duration/
+    python speech_duration.py --participant t16 --session word-loudness --savepath_data ../plotting_data/t16/word-loudness/speech_duration/ --savepath_fig ../plotting_figures/t16/word-loudness/speech_duration/
 
 Data will be loaded from the specified savepath_data directory.
 Figures will be saved in the specified savepath_fig directory.
@@ -151,6 +153,38 @@ def plot_speech_duration(stats):
     plt.savefig(f'{args.savepath_fig}/speech_duration_{args.participant}_{args.session}_{formatted_datetime}.png', format='png')
 
     return
+
+def plot_performance_confusion_matrix(mean_cf, mean_acc = None):
+
+    fig = plt.figure(figsize=(6, 5))
+    ax = sns.heatmap(mean_cf*100, annot=True, fmt=".1f", cmap='bone_r', vmin = 0, vmax = 100,
+                xticklabels = amplitudes, yticklabels = amplitudes, annot_kws={"size": fontsize, "color": "white"})
+    plt.xticks(np.arange(len(amplitudes)) + 0.5, amplitudes, fontsize = fontsize - 1)
+    plt.yticks(np.arange(len(amplitudes)) + 0.5, amplitudes, fontsize = fontsize - 1)
+    plt.xlabel('Predicted', fontsize = fontsize)
+    plt.ylabel('True', fontsize = fontsize)
+
+    cbar = plt.gca().collections[0].colorbar
+    cbar.ax.tick_params(labelsize=fontsize)
+
+    # Loop through annotations and change font color dynamically
+    cmap = plt.cm.get_cmap('bone_r')
+    for text in ax.texts:
+        value = float(text.get_text())  # Get numerical value of the cell
+        if value == 0:
+            text.set_text(int(value))
+        text.set_color("black" if value < 50 else "white")  # Use black for light backgrounds, white for dark
+
+    if mean_acc is not None:
+        plt.title(f'Accuracy: {mean_acc*100:.1f}%', fontsize = fontsize)
+
+    fig.tight_layout()
+    # plt.show()
+
+    # save figure
+    plt.savefig(f'{args.savepath_fig}{args.participant}_min_duration_loudness_classification_cf_{formatted_datetime}.png', format='png')
+
+    return
          
 
 if __name__ == "__main__":
@@ -186,5 +220,12 @@ if __name__ == "__main__":
     # plot duration stats
     print('Plotting speech duration stats...')
     plot_speech_duration(speech_duration_stats)
+
+    # plot decoding accuracy and confusion matrix when decoding from minimum duration
+    print('Loading decoding performance using minimum speech duration neural data...')
+    with open(f'{args.savepath_data}{args.participant}_min_duration_classification_acc.pkl', 'rb') as f:
+        data = pkl.load(f)
+
+    plot_performance_confusion_matrix(data['mean_cf'], data['mean_acc'])
 
     print('DONE!')
