@@ -104,7 +104,7 @@ firingrate_fontsize = 14
 # functions
 #--------------------------------------------
 def load_rdbmat(participant, session, required_keys):
-    # load data, remove incorrect trials
+    # load data
     data_path = f'../sample_neural_data/{participant}/{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
     files = os.listdir(data_path)
 
