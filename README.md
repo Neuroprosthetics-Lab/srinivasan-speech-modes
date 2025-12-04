@@ -38,8 +38,10 @@ Each script in ```analyses_scripts``` folder has an example run command specifie
 
 Scripts (or notebooks) to run for:
 1. Fig. 1, Supp. Fig. 1-3; psths: ```psth.py```
-2. Fig. 1, Supp. Fig.2; significant channels tuned to loudness or words: ```ch_encoding.py```
-3. Fig. 2, Supp. Fig. 5; PCA: ```pca.py```
+2. Fig. 1, Supp. Fig.2; significant channels tuned to loudness or words: ```ch_encoding_loudness.py```, ```ch_encoding_word.py```
+3. Fig. 2, Supp. Fig. 5; PCA: ```t15_pca_electrodes.ipynb```, ```t16_pca_electrodes.ipynb```
 4. Fig. 2, Supp. Fig. 5; dPCA: use Kobak et al. dPCA implementation in MATLAB (not included in this repo)
 6. Fig. 3, Supp. Fig. 7-8; open-loop classification performance: ```ol_classification.py```, ```ol_striding_classification.py```
 7. Supp. Fig. 9; speech duration: ```speech_duration.py```
+
+Please note that the results obtained through the above scripts are obtained from the sample data provided. They will not match the results provided in the manuscript. You can replicate the manuscript results once we make the entire dataset available (after publication). At present, these codes give insights on how we implemented the different analyses.
