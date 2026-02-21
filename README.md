@@ -33,7 +33,7 @@ Scripts to run for:
 9. Supp. Fig. 10; speech duration: ```speech_duration.py```
 
 ## Running analyses
-To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. Please download the data from Dryad (link will be provided after publication), unzip them and place the unzipped folders in the ```data``` directory. Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
+To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. Please download the data from Dryad (link will be provided after publication), unzip them, and place the unzipped folders in a ```data``` directory within this repo. Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
 
 Scripts (or notebooks) to run for:
 1. Fig. 1, Supp. Fig. 1-3; psths: ```psth.py```
