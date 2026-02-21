@@ -33,9 +33,7 @@ Scripts to run for:
 9. Supp. Fig. 10; speech duration: ```speech_duration.py```
 
 ## Running analyses
-To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. The python scripts (and notebooks) in the folder read the sample neural data ( a small subset of the dataset reported in the manuscript) in ```sample_neural_data```, run the required analyses and save the results and plots. 
-
-Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
+To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. Please download the data from Dryad (link will be provided after publication), unzip them and place the unzipped folders in the ```data``` directory. Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
 
 Scripts (or notebooks) to run for:
 1. Fig. 1, Supp. Fig. 1-3; psths: ```psth.py```
@@ -44,5 +42,3 @@ Scripts (or notebooks) to run for:
 4. Fig. 2, Supp. Fig. 5; dPCA: use Kobak et al. dPCA implementation in MATLAB (not included in this repo)
 6. Fig. 3, Supp. Fig. 7-8; open-loop classification performance: ```ol_classification.py```, ```ol_striding_classification.py```
 7. Supp. Fig. 9; speech duration: ```speech_duration.py```
-
-Please note that the results from the above scripts are obtained from the sample data provided. They will not match the results provided in the manuscript. You can replicate the manuscript results once we make the entire dataset available (after publication). At present, these codes show how we implemented the various analyses.
