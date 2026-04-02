@@ -23,22 +23,21 @@ Each script in the ```plotting_scripts``` folder has an example run command spec
 
 Scripts to run for:
 1. Fig. 1, Supp. Fig. 1-3; psths: ```psth.py```
-2. Fig. 1, Supp. Fig.2; significant channels tuned to loudness or words: ```ch_encoding.py```
+2. Fig. 1, Supp. Fig. 1; significant channels tuned to loudness or words: ```ch_encoding.py```
 3. Fig. 2, Supp. Fig. 5; PCA: ```pca.py```
 4. Fig. 2, Supp. Fig. 5; dPCA: ```dpca.py```
 5. Supp. Fig. 4; spike-sorted single-unit analysis: ```single_unit_psth_tuning.py```
 6. Fig. 3, Supp. Fig. 7-8; open-loop classification performance: ```ol_classification.py```, ```ol_striding_classification.py```
 7. Supp. Fig. 6; breath and speech analyses: ```speech_breath_analyses.py```
-8. Supp. Fig. 9; classification using dPCA projections: ```dpca_classification.py```
-9. Supp. Fig. 10; speech duration: ```speech_duration.py```
+8. Supp. Fig. 10; speech duration: ```speech_duration.py```
 
 ## Running analyses
-To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. Please download the data from Dryad (https://datadryad.org/dataset/doi:10.5061/dryad.2547d7x5w), unzip them, and place the unzipped folders in a ```data``` directory within this repo. Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
+To analyze the neural data (firing rate activity, pca, loudness classification, etc.), you can run the codes in the folder ```analyses_scripts```. Please download the data from Dryad (https://datadryad.org/dataset/doi:10.5061/dryad.2547d7x5w), unzip them, and place the unzipped folders in the ```analyses_data``` directory within this repo. Each script in ```analyses_scripts``` folder has an example run command specified at the top which can be used to execute the script. 
 
 Scripts (or notebooks) to run for:
 1. Fig. 1, Supp. Fig. 1-3; psths: ```psth.py```
-2. Fig. 1, Supp. Fig.2; significant channels tuned to loudness or words: ```ch_encoding_loudness.py```, ```ch_encoding_word.py```
-3. Fig. 2, Supp. Fig. 5; PCA: ```t15_pca_electrodes.ipynb```, ```t16_pca_electrodes.ipynb```
-4. Fig. 2, Supp. Fig. 5; dPCA: use Kobak et al. dPCA implementation in MATLAB (not included in this repo)
+2. Fig. 1, Supp. Fig. 1; significant channels tuned to loudness or words: ```ch_encoding_loudness.py```, ```ch_encoding_word.py```
+3. Fig. 2, Supp. Fig. 5; PCA: ```pca.py```
+4. Fig. 2, Supp. Fig. 5; dPCA: use Kobak et al. dPCA implementation in MATLAB (not included in this repo). Use the plotting script mentioned above to view the results.
 6. Fig. 3, Supp. Fig. 7-8; open-loop classification performance: ```ol_classification.py```, ```ol_striding_classification.py```
 7. Supp. Fig. 9; speech duration: ```speech_duration.py```

@@ -5,7 +5,6 @@ import numpy as np
 import pickle as pkl
 from pathlib import Path 
 import math
-from functions import get_audio_onset_offset
 from datetime import datetime
 import copy
 import matplotlib.pyplot as plt
@@ -15,15 +14,15 @@ import sys
 import seaborn as sns
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python ol_classification.py --participant t15 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t15/word-loudness/ol_classification/ --savepath_data ../analyses_figures_data/t15/word-loudness/ol_classification/
 For t16,
     python ol_classification.py --participant t16 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t16/word-loudness/ol_classification/ --savepath_data ../analyses_figures_data/t16/word-loudness/ol_classification/
 
-Sample neural data will be loaded from ../sample_neural_data/{participant}/{session}/.
+Neural data will be loaded from ../analyses_data/{participant}_{session}/.
 Results obtained from this script will be saved in savepath_data.
-Figures generated using those results will be saved in savepath_fig.
+Figures generated from this script will be saved in savepath_fig.
 '''
 
 #---------------------------------------------------
@@ -33,13 +32,14 @@ n_channels = 256
 n_electrodes_per_array = 64
 bin_size_ms = 10
 fs = 30000
+pre_delay_nbins_in_neural_feat = 100
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
-# words = ['be', 'my', 'know', 'do', 'have', 'going'] # use when all the data is provided via Dryad
-words = ['be', 'my', ] # use with sample data provided in Github
+words = ['be', 'my', 'know', 'do', 'have', 'going']
+
 
 arrays = {
-    't15': ['M1', 'v6v','d6v','55b'], # correct_electrode_mapping = 0
-    't16': ['55b', '6v'],#, 'HK1', 'HK2'],
+    't15': ['M1', 'v6v','d6v','55b'], 
+    't16': ['55b', '6v'],
 }
 
 # plotting
@@ -49,8 +49,8 @@ my_color = 'navy'
 my_color_all_array = 'green'
 bar_width = 1.2
 array_plotting_order = {
-    't15': ['55b', 'd6v', 'M1', 'v6v'], # using_correct_electrode_mapping = 0
-    't16': ['55b', '6v'],#,'HK1','HK2'] # only speech arrays needed
+    't15': ['55b', 'd6v', 'M1', 'v6v'],
+    't16': ['55b', '6v']
 }
 
 #--------------------------------------------
@@ -58,7 +58,7 @@ array_plotting_order = {
 #--------------------------------------------
 def load_rdbmat(participant, session, required_keys):
     # load data
-    data_path = f'../sample_neural_data/{participant}/{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
+    data_path = f'../analyses_data/{participant}_{session}/'
     files = os.listdir(data_path)
 
     data = {}
@@ -78,6 +78,8 @@ def load_rdbmat(participant, session, required_keys):
                 for key in required_keys:
                     data[key] = np.append(data[key], data_temp_required[key], axis = -1)
 
+    data['cue'] = np.squeeze(data['cue']) # squeeze cue numpy array shape
+
     print('Data loaded ...')
     for key in data:
         print(key, data[key].shape)
@@ -95,11 +97,8 @@ def get_training_data(data):
     y_amp = np.empty((0, 1)) # n_trials x amplitude label
     
     n_trials = len(data['cue'])
-    if args.participant == 't15':
-        valid_trial_inds = [i for i in range(n_trials) if 'DO NOTHING' not in data['cue'][i] and max(np.squeeze(data['predaudio16k'])[i]) != 0]
-    elif args.participant in ['t16', 't19']:
-        valid_trial_inds = [i for i in range(n_trials) if 'DO NOTHING' not in data['cue'][i]]
-    print('Total number of usable trials:', len(valid_trial_inds))
+    valid_trial_inds = [i for i in range(n_trials) if 'DO NOTHING' not in data['cue'][i]]
+    print('Total number of trials:', len(valid_trial_inds))
 
     for ind in valid_trial_inds:
         
@@ -107,30 +106,20 @@ def get_training_data(data):
         cue = data['cue'][ind].strip()
         amp_label = [amplitudes.index(cue.split(':')[0])]
         word_label = [words.index(cue.split(':')[-1].strip())]
-        spikepow = np.squeeze(data['spikepow_from_delay'])[ind]
-        threshcross = np.squeeze(data['threshcross_from_delay'])[ind]
+        spikepow = np.squeeze(data['spikepow'])[ind]
+        threshcross = np.squeeze(data['threshcross'])[ind]
         delay_duration_ms = np.squeeze(data['delay_duration_ms'])[ind]
         binned_delay_duration = int(np.squeeze(delay_duration_ms) / bin_size_ms)
-        if args.participant == 't15':
-            
-            predaudio16k = np.squeeze(data['predaudio16k'])[ind]
-        
-            # speech onset
-            start_ind, end_ind = get_audio_onset_offset(predaudio16k, display_audio = False, 
-                                                                mic_audio = None, cue = None, 
-                                                                intersegment_duration = 3000, 
-                                                                amplitude_percentage = 0.1) # returns ind at 30k
 
-        elif args.participant == 't16':
-            start_ind = np.squeeze(data['speech_onsets'])[ind]
-            end_ind = np.squeeze(data['speech_offsets'])[ind]
-            
-        # binned start and end ind
+        spikepow = spikepow[pre_delay_nbins_in_neural_feat:, :] # from delay period
+        threshcross = threshcross[pre_delay_nbins_in_neural_feat:, :] # from delay period
+
+        start_ind = np.squeeze(data['speech_onsets'])[ind]
+        end_ind = np.squeeze(data['speech_offsets'])[ind]
         start_ind = math.floor((start_ind/fs) * (1000/bin_size_ms)) # divide by sampling rate (30kHZ), scale it to ms by multiplying with 1000, divide by 10 to get bin index
         end_ind = math.ceil((end_ind/fs) * (1000/bin_size_ms)) # divide by sampling rate (30kHZ), scale it to ms by multiplying with 1000, divide by 10 to get bin index
 
-
-        if np.expand_dims(spikepow[binned_delay_duration + (start_ind - args.nbins_before_onset): binned_delay_duration + (start_ind + args.nbins_after_onset), :], 0).shape[1] == args.nbins_before_onset + args.nbins_after_onset:
+        if spikepow[binned_delay_duration + (start_ind - args.nbins_before_onset): binned_delay_duration + (start_ind + args.nbins_after_onset), :].shape[0] == args.nbins_before_onset + args.nbins_after_onset:
             
             # add spikepow and threshcross around speech onset
             temp_spikepow = spikepow[binned_delay_duration + (start_ind - args.nbins_before_onset): binned_delay_duration + (start_ind + args.nbins_after_onset), :] # shape (time_bins x 256)
@@ -326,17 +315,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--participant', type=str, default=None, help='participant id')
     parser.add_argument('--session', type=str, default=None, help = 'session id')
-    parser.add_argument('--required_keys', type=list, default=['cue', 'delay_duration_ms', 'predaudio16k', 'spikepow_from_delay', 'threshcross_from_delay'], help = 'keys to load from rdbmat files')
-    parser.add_argument('--nbins_before_onset', type=int, default=None, help = 'number of bins before speech onset')
-    parser.add_argument('--nbins_after_onset', type=int, default=None, help = 'number of bins after speech onset')
+    parser.add_argument('--required_keys', type=list, default=['cue', 'delay_duration_ms', 'spikepow', 'threshcross', 'speech_onsets', 'speech_offsets'], help = 'keys to load from rdbmat files')
+    parser.add_argument('--nbins_before_onset', type=int, default=60, help = 'number of bins before speech onset')
+    parser.add_argument('--nbins_after_onset', type=int, default=60, help = 'number of bins after speech onset')
     parser.add_argument('--n_repeats_per_fold', type=int, default=1, help = 'number of times each fold is modeled with a different random seed, or chance is computed per fold')
     parser.add_argument('--savepath_data', type=str, default='../figures_data/', help = 'path to save processed data from this script')
     parser.add_argument('--savepath_fig', type=str, default='../figures/', help = 'path to save figures from this script')
     args = parser.parse_args()
-
-    if args.participant == 't16':
-        args.required_keys.extend(['speech_onsets', 'speech_offsets'])
-        args.required_keys.remove('predaudio16k')
 
     if not os.path.exists(args.savepath_data):
         os.makedirs(args.savepath_data, exist_ok=True)
@@ -382,8 +367,7 @@ if __name__ == "__main__":
     fold_accuracies['all_chance'] = fold_acc_chance
     fold_accuracies['all_cf'] = fold_cf
 
-    print('All arrays SPB + THX results')
-    print(fold_acc, np.mean(fold_acc))
+    print('All arrays decoding accuracy:', np.mean(fold_acc))
 
     # save results
     with open(f'{args.savepath_data}{args.participant}_{args.session}_ol_classification_allarrays_acc_{formatted_datetime}.pkl', 'wb') as f:
@@ -443,3 +427,5 @@ if __name__ == "__main__":
         f.write(str(args))
         f.write('\n\n----------\n\n')
         f.write(script_content)
+
+    print('DONE!')

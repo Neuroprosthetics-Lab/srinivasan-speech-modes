@@ -27,17 +27,16 @@ Figures generated using those results will be saved in savepath_fig.
 fs = 30000
 bin_size_ms = 10
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
-# words = ['be', 'my', 'know', 'do', 'have', 'going'] # use when all the data is provided via Dryad
-words = ['be', 'my', ] # use with sample data provided in Github
+words = ['be', 'my', 'know', 'do', 'have', 'going'] # use when all the data is provided via Dryad
 fontsize = 17
 target_color = [
     (0.9254902, 0.12156863, 0.14117647),
     (0.98431373, 0.72941176, 0.07058824),
-    # [0.57254902, 0.78431373, 0.24313725],  # Commented out in MATLAB
+    # [0.57254902, 0.78431373, 0.24313725], 
     (0.384, 0.682, 0.2),
     (0.43137255, 0.79607843, 0.85490196),
     # (0.26529412, 0.40686275, 0.72490196),
-    [0.45568627, 0.31764706, 0.63529412],  # Commented out in MATLAB
+    [0.45568627, 0.31764706, 0.63529412],
     (0.84705882, 0.2627451, 0.59215686)
 ]
 star_step = 0.1
@@ -49,7 +48,7 @@ markeredgewidth = 2
 #--------------------------------------------
 def load_rdbmat(participant, session, required_keys):
     # load data
-    data_path = f'../sample_neural_data/{participant}/{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
+    data_path = f'../analyses_data/{participant}_{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
     files = os.listdir(data_path)
 
     data = {}
@@ -69,6 +68,8 @@ def load_rdbmat(participant, session, required_keys):
                 for key in required_keys:
                     data[key] = np.append(data[key], data_temp_required[key], axis = -1)
 
+    data['cue'] = np.squeeze(data['cue']) # squeeze cue numpy array shape 
+
     print('Data loaded ...')
     for key in data:
         print(key, data[key].shape)
@@ -87,31 +88,12 @@ def compute_speech_duration(data):
         speech_duration_stats[word] = {}
         for amp in amplitudes:
             speech_duration_stats[word][amp] = []
-            if args.participant == 't15':
-                inds = [i for i in range(len(data['cue'])) 
-                        if amp in data['cue'][i] and word in data['cue'][i] and
-                        max(np.squeeze(data['predaudio16k'])[i]) != 0] # brain2voice works
-            elif args.participant == 't16':
-                inds = [i for i in range(len(data['cue'])) 
-                        if amp in data['cue'][i] and word in data['cue'][i]]
+            inds = [i for i in range(len(data['cue'])) if amp in data['cue'][i] and word in data['cue'][i]]
                 
             for ind in inds:
 
-                if args.participant == 't15':
-                    predaudio16k = np.squeeze(data['predaudio16k'])[ind]
-                    start_ind, end_ind = get_audio_onset_offset(predaudio16k, display_audio = False, 
-                                                                        cue = None, 
-                                                                        intersegment_duration = 3000, 
-                                                                        amplitude_percentage = 0.1) # returns ind at 30k
-                    if start_ind < 0 or end_ind < 0:
-                        continue
-
-                elif args.participant == 't16':
-                    start_ind = np.squeeze(data['speech_onsets'])[ind]
-                    end_ind = np.squeeze(data['speech_offsets'])[ind]
-                    if start_ind < 0 or end_ind < 0:
-                        continue
-
+                start_ind = np.squeeze(data['speech_onsets'])[ind].squeeze()
+                end_ind = np.squeeze(data['speech_offsets'])[ind].squeeze()
                 # start ind and end ind in seconds
                 start_ind = start_ind/fs 
                 end_ind = end_ind/fs 
@@ -121,21 +103,15 @@ def compute_speech_duration(data):
                     continue
                 speech_duration_stats[word][amp].append((end_ind - start_ind))
                 trial_counter += 1
-
-    print('Number of trials with speech duration measurement:', trial_counter)
     
     min_duration_across_all_trials = 100
-    min_mean_duration_across_word_loudness = 100
     for word in words:
         for amp in amplitudes:
             print(f'Min, max, mean duration (s) for {word} {amp}: {np.min(speech_duration_stats[word][amp])}, {np.max(speech_duration_stats[word][amp])}, {np.mean(speech_duration_stats[word][amp])}')
             if np.min(speech_duration_stats[word][amp]) < min_duration_across_all_trials:
                 min_duration_across_all_trials = np.min(speech_duration_stats[word][amp])
-            if np.mean(speech_duration_stats[word][amp]) < min_mean_duration_across_word_loudness:
-                min_mean_duration_across_word_loudness = np.mean(speech_duration_stats[word][amp])
-                print(f'{word}-{amp} has the min mean duration')
 
-    return speech_duration_stats, min_duration_across_all_trials, min_mean_duration_across_word_loudness
+    return speech_duration_stats, min_duration_across_all_trials
 
 
 def plot_speech_duration(stats):
@@ -261,14 +237,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--participant', type=str, default=None, help='participant id')
     parser.add_argument('--session', type=str, default=None, help = 'session id')
-    parser.add_argument('--required_keys', type=list, default=['cue', 'predaudio16k'], help = 'keys to load from rdbmat files')
+    parser.add_argument('--required_keys', type=list, default=['cue', 'speech_onsets', 'speech_offsets'], help = 'keys to load from rdbmat files')
     parser.add_argument('--savepath_data', type=str, default='../figures_data/', help = 'path to save processed data from this script')
     parser.add_argument('--savepath_fig', type=str, default='../figures/', help = 'path to save figures from this script')
     args = parser.parse_args()
-    
-    if args.participant == 't16':
-        args.required_keys.extend(['speech_onsets', 'speech_offsets'])
-        args.required_keys.remove('predaudio16k') 
 
     if args.participant == 't15':
         alpha = [0.25, 0.5, 0.75, 1]
@@ -291,9 +263,8 @@ if __name__ == "__main__":
 
     # compute speech duration
     print('Computing speech duration ...')
-    speech_duration_stats, min_duration, min_mean_duration = compute_speech_duration(data)
+    speech_duration_stats, min_duration = compute_speech_duration(data)
     print('Min duration across all word-loudness trials:', min_duration) # t15 = 306 ms. t16 = 155 ms
-    print('Min mean duration across word-loudness conditions:', min_mean_duration) # t15 = 529 ms, t16 = 393 ms
 
     # save speech duration stats
     with open(f'{args.savepath_data}/speech_duration_stats_{args.participant}_{args.session}_{formatted_datetime}.pkl', 'wb') as f:

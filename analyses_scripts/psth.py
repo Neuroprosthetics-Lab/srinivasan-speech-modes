@@ -8,22 +8,21 @@ from pathlib import Path
 import math
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
-from functions import get_audio_onset_offset
 import pickle as pkl
 from datetime import datetime
 import sys
 import matplotlib.transforms as transforms
 
 '''
-Example cmd:
+Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
     python psth.py --participant t15 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 25 --plot_speech_offset --savepath_data ../analyses_figures_data/t15/word-loudness/psth/ --savepath_fig ../analyses_figures/t15/word-loudness/psth/
 For t16,
-    python psth.py --participant t16 --session word-loudness --nbins_before_onset 100 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 25 --plot_speech_offset --savepath_data ../analyses_figures_data/t16/word-loudness/psth/ --savepath_fig ../analyses_figures/t16/word-loudness/psth/
+    python psth.py --participant t16 --session word-loudness --nbins_before_onset 50 --nbins_after_onset 50 --nbins_before_offset 25 --nbins_after_offset 25 --plot_speech_offset --savepath_data ../analyses_figures_data/t16/word-loudness/psth/ --savepath_fig ../analyses_figures/t16/word-loudness/psth/
 
-Sample neural data will be loaded from ../sample_neural_data/{participant}/{session}/.
+Neural data will be loaded from ../analyses_data/{participant}_{session}/.
 Results obtained from this script will be saved in savepath_data.
-Figures generated using those results will be saved in savepath_fig.
+Figures generated from this script will be saved in savepath_fig.
 '''
 
 #---------------------------------------------------
@@ -35,7 +34,7 @@ fs = 30000
 amplitudes = ['MIME', 'WHISPER', 'NORMAL', 'LOUD']
 n_channels = 256
 bins_before_trial_end = 10
-delay_onset_raw_threshcross_from_pre_cue = 100 # rdbmat has 1s of raw thx before trial start included "raw_threshcross_from_pre_cue"
+pre_delay_nbins_in_raw_threshcross = 100
 required_binned_delay_duration = 100 # required delay duration bins for plotting
 
 # gassian smoothing params
@@ -52,13 +51,13 @@ my_color = [
     (53/255, 126/255, 221/255),
     (0, 79/255, 158/255),
 ]
-fontsize = 12 # general for all psth plots; not for select channels
+fontsize = 12 
 scatter_size = 30
 delay_duration = 100
 linewidth = 2
 
 arrays = {
-    't15': ['M1', 'v6v','d6v','55b'], # correct_electrode_mapping = 0
+    't15': ['M1', 'v6v','d6v','55b'],
     't16': ['55b/PEF', '6v', 'HK1', 'HK2'],
 }
 
@@ -90,11 +89,11 @@ ch_sets = {
 }
 ch_set_names = {
     't15': ['55b', 'd6v', 'M1', 'v6v'], # using_correct_electrode_mapping = 0
-    't16': ['55b/PEF', '6v']#,'HK1','HK2'] # only speech arrays needed
+    't16': ['55b/PEF', '6v']
 }
 plotting_orders = {
     't15': [plotting_order_2, plotting_order_2, plotting_order_1, plotting_order_1],
-    't16': [plotting_order_2, plotting_order_2]#, plotting_order_1, plotting_order_1]
+    't16': [plotting_order_2, plotting_order_2]
 }
 
 firingrate_scatter_size = 100
@@ -105,7 +104,7 @@ firingrate_fontsize = 14
 #--------------------------------------------
 def load_rdbmat(participant, session, required_keys):
     # load data
-    data_path = f'../sample_neural_data/{participant}/{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
+    data_path = f'../analyses_data/{participant}_{session}/' # t15.2023.11.04 has using_correct_electrode_mapping = 0
     files = os.listdir(data_path)
 
     data = {}
@@ -125,6 +124,8 @@ def load_rdbmat(participant, session, required_keys):
                 for key in required_keys:
                     data[key] = np.append(data[key], data_temp_required[key], axis = -1)
 
+    data['cue'] = np.squeeze(data['cue']) # squeeze cue numpy array shape
+
     print('Data loaded ...')
     for key in data:
         print(key, data[key].shape)
@@ -143,86 +144,55 @@ def compute_psth(data):
     avg_end_thx = np.empty((0, args.nbins_before_offset + args.nbins_after_offset, n_channels)) # n_amp x time_bins x n_channels
     sem_end_thx = np.empty((0, args.nbins_before_offset + args.nbins_after_offset, n_channels)) # n_amp x time_bins x n_channels
 
-    skipped_trial_ids = []
-
     for amp in amplitudes:
 
         go_thx = np.empty((0, args.nbins_before_onset + args.nbins_after_onset, n_channels)) # speech onset
         delay_thx = np.empty((0, bins_before_trial_end + required_binned_delay_duration, n_channels))
         end_thx = np.empty((0, args.nbins_before_offset + args.nbins_after_offset, n_channels)) # speech offset
 
-
-        if args.participant == 't15':
-            inds = [i for i in range(len(data['cue'])) if amp in data['cue'][i] and 
-                    max(np.squeeze(data['predaudio16k'])[i]) != 0]
-        elif args.participant in ['t16', 't19']:
-            inds = [i for i in range(len(data['cue'])) if amp in data['cue'][i]]
+        inds = [i for i in range(len(data['cue'])) if amp in data['cue'][i]]
         
         for ind in inds:
+
             # get current data
-            prev_threshcross = np.squeeze(data['raw_threshcross_from_pre_cue'])[ind]
             threshcross = np.squeeze(data['raw_threshcross'])[ind]
-            # next_threshcross = np.squeeze(data['raw_threshcross_with_post_end'])[ind]
             delay_duration_ms = np.squeeze(data['delay_duration_ms'])[ind]
             binned_delay_duration = int(np.squeeze(delay_duration_ms) / bin_size_ms)
-            
-            # speech onset
-            if args.participant == 't15':
-                predaudio16k = np.squeeze(data['predaudio16k'])[ind]
-                start_ind, end_ind = get_audio_onset_offset(predaudio16k, display_audio = False, 
-                                                                    mic_audio = None, cue = None, 
-                                                                    intersegment_duration = 3000, 
-                                                                    amplitude_percentage = 0.1) # returns ind at 30k
-            elif args.participant == 't16':
-                start_ind = np.squeeze(data['speech_onsets'])[ind]
-                end_ind = np.squeeze(data['speech_offsets'])[ind]
 
-            
-            # binned start and end ind
+            start_ind = np.squeeze(data['speech_onsets'])[ind].squeeze()
+            end_ind = np.squeeze(data['speech_offsets'])[ind].squeeze()
             start_ind = math.floor((start_ind/fs) * (1000/bin_size_ms)) # divide by sampling rate (30kHZ), scale it to ms by multiplying with 1000, divide by 10 to get bin index
             end_ind = math.ceil((end_ind/fs) * (1000/bin_size_ms)) # divide by sampling rate (30kHZ), scale it to ms by multiplying with 1000, divide by 10 to get bin index
 
             # gaussian smoothing
-            prev_threshcross_smth = gaussian_filter1d(prev_threshcross.astype(float), sigma = sigma[args.participant], order = order, axis = 0) # sigma controls smoothing, higher is more smoothed
-            threshcross_smth = gaussian_filter1d(threshcross.astype(float), sigma = sigma[args.participant], order = order, axis = 0) # sigma controls smoothing, higher is more smoothed
-            # next_threshcross_smth = gaussian_filter1d(next_threshcross.astype(float), sigma = sigma[args.participant], order = order, axis = 0)
+            threshcross_smth = gaussian_filter1d(threshcross.astype(float), sigma = sigma[args.participant], order = order, axis = 0)
 
             # speech onset and offset threshcross
-            speech_onset_thx = np.expand_dims(threshcross[binned_delay_duration + (start_ind - args.nbins_before_onset): binned_delay_duration + (start_ind + args.nbins_after_onset), :], 0)
-            speech_offset_thx = np.expand_dims(threshcross[binned_delay_duration + (end_ind - args.nbins_before_offset): binned_delay_duration + (end_ind + args.nbins_after_offset), :], 0)
-            if speech_onset_thx.shape[1] == args.nbins_before_onset + args.nbins_after_onset and speech_offset_thx.shape[1] == args.nbins_before_offset + args.nbins_after_offset:
-
-                # print(binned_delay_duration + start_ind, binned_delay_duration + end_ind, threshcross_smth.shape,)
+            speech_onset_thx = threshcross[pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (start_ind - args.nbins_before_onset): pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (start_ind + args.nbins_after_onset), :]
+            speech_offset_thx = threshcross[pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (end_ind - args.nbins_before_offset): pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (end_ind + args.nbins_after_offset), :]
+            
+            if speech_onset_thx.shape[0] == args.nbins_before_onset + args.nbins_after_onset and speech_offset_thx.shape[0] == args.nbins_before_offset + args.nbins_after_offset:
 
                 # go period threshcross
-                temp_thx = threshcross_smth[binned_delay_duration + (start_ind - args.nbins_before_onset): binned_delay_duration + (start_ind + args.nbins_after_onset), :] * 100 # multiply by 100 for firing rate, shape (time_bins x 256)
+                temp_thx = threshcross_smth[pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (start_ind - args.nbins_before_onset): pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (start_ind + args.nbins_after_onset), :] * 100 # multiply by 100 for firing rate, shape (time_bins x 256)
                 go_thx = np.append(go_thx, np.expand_dims(temp_thx, 0), axis = 0)
             
                 # delay period threshcross, with some threshold crossings before cue onset
-                temp_thx = prev_threshcross_smth[(delay_onset_raw_threshcross_from_pre_cue - bins_before_trial_end): (delay_onset_raw_threshcross_from_pre_cue + required_binned_delay_duration), :] * 100 # multiply by 100 for firing rate, shape (time_bins x 256); first 200 bins after trial start
+                temp_thx = threshcross_smth[(pre_delay_nbins_in_raw_threshcross - bins_before_trial_end): (pre_delay_nbins_in_raw_threshcross + required_binned_delay_duration), :] * 100 # multiply by 100 for firing rate, shape (time_bins x 256); first 200 bins after trial start
                 delay_thx = np.append(delay_thx, np.expand_dims(temp_thx, axis = 0), axis = 0)
 
                 # speech offset threshcross
-                temp_thx = threshcross_smth[binned_delay_duration + (end_ind - args.nbins_before_offset): binned_delay_duration + (end_ind + args.nbins_after_offset), :] * 100
+                temp_thx = threshcross_smth[pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (end_ind - args.nbins_before_offset): pre_delay_nbins_in_raw_threshcross + binned_delay_duration + (end_ind + args.nbins_after_offset), :] * 100
                 end_thx = np.append(end_thx, np.expand_dims(temp_thx, 0), axis = 0)
 
-            else:
-                skipped_trial_ids.append(ind)
-                # print(f'Skipping because {args.nbins_after_onset} bins after speech onset is after the end of the trial',binned_delay_duration + start_ind, binned_delay_duration + end_ind, threshcross_smth.shape,)
-                
+
         avg_go_thx = np.append(avg_go_thx, np.expand_dims(np.mean(go_thx, axis = 0), axis = 0), axis = 0)
-        sem_go_thx = np.append(sem_go_thx, np.expand_dims(np.std(go_thx, axis = 0) / np.sqrt(go_thx.shape[0]), axis = 0), 
-                                        axis = 0)
+        sem_go_thx = np.append(sem_go_thx, np.expand_dims(np.std(go_thx, axis = 0) / np.sqrt(go_thx.shape[0]), axis = 0), axis = 0)
         avg_delay_thx = np.append(avg_delay_thx, np.expand_dims(np.mean(delay_thx, axis = 0), axis = 0), axis = 0)
-        sem_delay_thx = np.append(sem_delay_thx, np.expand_dims(np.std(delay_thx, axis = 0) / np.sqrt(delay_thx.shape[0]), axis = 0),
-                                    axis = 0)
+        sem_delay_thx = np.append(sem_delay_thx, np.expand_dims(np.std(delay_thx, axis = 0) / np.sqrt(delay_thx.shape[0]), axis = 0),axis = 0)
         
         avg_end_thx = np.append(avg_end_thx, np.expand_dims(np.mean(end_thx, axis = 0), axis = 0), axis = 0)
-        sem_end_thx = np.append(sem_end_thx, np.expand_dims(np.std(end_thx, axis = 0) / np.sqrt(end_thx.shape[0]), axis = 0), 
-                                        axis = 0)
-        
-    print('Skipped trials: ', skipped_trial_ids)
-    print('Number of skipped trials:', len(skipped_trial_ids))
+        sem_end_thx = np.append(sem_end_thx, np.expand_dims(np.std(end_thx, axis = 0) / np.sqrt(end_thx.shape[0]), axis = 0), axis = 0)
         
     print('AVG and SEM thx shapes (go, delay, end)', avg_go_thx.shape, sem_go_thx.shape, avg_delay_thx.shape, sem_delay_thx.shape, avg_end_thx.shape, sem_end_thx.shape)
     return avg_go_thx, sem_go_thx, avg_delay_thx, sem_delay_thx, avg_end_thx, sem_end_thx
@@ -456,7 +426,6 @@ def plot_psth_given_channel(avg_go_thx, sem_go_thx, avg_delay_thx, sem_delay_thx
 def plot_psth_per_array(avg_go_thx, sem_go_thx, avg_delay_thx, sem_delay_thx, avg_end_thx, sem_end_thx, plt_channels):
 
     ch_sets_name = ch_set_names[args.participant]
-    print(ch_sets_name)
 
     # stitch together delay, speech onset and speech offset periods for plotting
     # introduce X bins of NaNs between each period for visual separation
@@ -543,19 +512,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--participant', type=str, default=None, help='participant id')
     parser.add_argument('--session', type=str, default=None, help = 'session id')
-    parser.add_argument('--required_keys', type=list, default=['cue', 'delay_duration_ms', 'predaudio16k', 'raw_threshcross', 'raw_threshcross_from_pre_cue'], help = 'keys to load from rdbmat files')
-    parser.add_argument('--nbins_before_onset', type=int, default=None, help = 'number of bins before speech onset')
-    parser.add_argument('--nbins_after_onset', type=int, default=None, help = 'number of bins after speech onset')
-    parser.add_argument('--nbins_before_offset', type=int, default=None, help='number of bins before speech offset')
-    parser.add_argument('--nbins_after_offset', type=int, default=None, help='number of bins after speech offset')
+    parser.add_argument('--required_keys', type=list, default=['cue', 'delay_duration_ms', 'raw_threshcross', 'speech_onsets', 'speech_offsets'], help = 'keys to load from rdbmat files')
+    parser.add_argument('--nbins_before_onset', type=int, default=150, help = 'number of bins before speech onset')
+    parser.add_argument('--nbins_after_onset', type=int, default=100, help = 'number of bins after speech onset')
+    parser.add_argument('--nbins_before_offset', type=int, default=25, help='number of bins before speech offset')
+    parser.add_argument('--nbins_after_offset', type=int, default=25, help='number of bins after speech offset')
     parser.add_argument('--plot_speech_offset', action='store_true', help='whether to plot psth around speech offset; default psth around cue and speech onset')
     parser.add_argument('--savepath_data', type=str, default='../figures_data/', help = 'path to save processed data from this script')
     parser.add_argument('--savepath_fig', type=str, default='../figures/', help = 'path to save figures from this script')
     args = parser.parse_args()
-    
-    if args.participant == 't16':
-        args.required_keys.extend(['speech_onsets', 'speech_offsets'])
-        args.required_keys.remove('predaudio16k')
 
     if not os.path.exists(args.savepath_data):
         os.makedirs(args.savepath_data, exist_ok = True)
@@ -571,24 +536,8 @@ if __name__ == "__main__":
 
     # some data statistics
     n_trials = len(data['cue'])
-    print('Total number of trials:', n_trials)
-    
-    if args.participant == 't15':
-        print('Total number of valid word-amplitude trials:', len([i for i in range(n_trials) 
-                                                                if 'DO NOTHING' not in data['cue'][i] and 
-                                                                max(np.squeeze(data['predaudio16k'])[i]) != 0])) # trials that are not DO NOTHING or do not have b2v predictions (which is used to determine speech onset)
-    elif args.participant in ['t16', 't19']:
-        print('Total number of valid word-amplitude trials:', len([i for i in range(n_trials) 
-                                                                if 'DO NOTHING' not in data['cue'][i]]))
-
-    print('Total number of DO NOTHING trials:', len([i for i in range(n_trials) if 'DO NOTHING' in data['cue'][i]]))
-
     for amp in amplitudes:
-        if args.participant == 't15':
-            print(f'Number of valid {amp} trials:', len([i for i in range(n_trials) if amp in data['cue'][i]
-                                                and max(np.squeeze(data['predaudio16k'])[i]) != 0]))
-        elif args.participant in ['t16', 't19']:
-            print(f'Number of valid {amp} trials:', len([i for i in range(n_trials) if amp in data['cue'][i]]))
+        print(f'Number of valid {amp} trials:', len([i for i in range(n_trials) if amp in data['cue'][i]]))
         
     # compute psth
     print('Computing firing rates ...')
@@ -605,8 +554,8 @@ if __name__ == "__main__":
         }, f)
 
     # plot psth
-    print('Plotting all channels ...')
-    plot_psth_per_channel(avg_go_thx, sem_go_thx, avg_delay_thx, sem_delay_thx)
+    # print('Plotting all channels ...')
+    # plot_psth_per_channel(avg_go_thx, sem_go_thx, avg_delay_thx, sem_delay_thx) # uncomment if you want to get psth per channel (256 or 128 figures will be generated)
 
     # plot particular channel psth
     print('Plotting particular channels ...')

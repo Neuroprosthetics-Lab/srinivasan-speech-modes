@@ -14,8 +14,9 @@ For t15,
 For t16,
     python ch_dropping.py --participant t16 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_data ../plotting_data/t16/word-loudness/ch_dropping/ --savepath_fig ../plotting_figures/t16/word-loudness/ch_dropping/
 
-Data will be loaded from the specified savepath_data directory.
-Figures will be saved in the specified savepath_fig directory.
+Neural data will be loaded from ../analyses_data/{participant}_{session}/.
+Results obtained from this script will be saved in savepath_data.
+Figures generated from this script will be saved in savepath_fig.
 '''
 
 #---------------------------------------------------
