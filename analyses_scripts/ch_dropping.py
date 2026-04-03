@@ -14,9 +14,9 @@ import pandas as pd
 '''
 Example cmd (when run from this directory; provide python script path appropriately if run from different directory):
 For t15,
-    python ch_dropping.py --participant t15 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t15/ch_dropping/ --savepath_data ../analyses_figures_data/t15/ch_dropping/ --n_repeats 10
+    python ch_dropping.py --participant t15 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t15/word-loudness/ch_dropping/ --savepath_data ../analyses_figures_data/t15/word-loudness/ch_dropping/ --n_repeats 10
 For t16,
-    python ch_dropping.py --participant t16 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t16/ch_dropping/ --savepath_data ../analyses_figures_data/t16/ch_dropping/ --n_repeats 10
+    python ch_dropping.py --participant t16 --session word-loudness --nbins_before_onset 60 --nbins_after_onset 60 --savepath_fig ../analyses_figures/t16/word-loudness/ch_dropping/ --savepath_data ../analyses_figures_data/t16/word-loudness/ch_dropping/ --n_repeats 10
 
 Neural data will be loaded from ../analyses_data/{participant}_{session}/.
 Results obtained from this script will be saved in savepath_data.
